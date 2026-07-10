@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}FitAI - Exercise Library{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h2 class="fw-bold mb-1"><i class="bi bi-book-half text-gradient me-2"></i>Exercise Library</h2>
+        <p class="text-secondary-custom small mb-0">Browse details and instructions for various strength and cardio exercises.</p>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="card-custom bg-tertiary p-4 mb-4">
+    <form action="{{ url_for('exercises.list_exercises') }}" method="GET">
+        <div class="row g-3">
+            <!-- Search -->
+            <div class="col-md-4">
+                <label for="search" class="form-label small fw-semibold text-secondary-custom">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary border-opacity-25 text-secondary-custom"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control form-control-custom" id="search" name="search" value="{{ search }}" placeholder="e.g. Squat">
+                </div>
+            </div>
+            
+            <!-- Category -->
+            <div class="col-md-2">
+                <label for="category" class="form-label small fw-semibold text-secondary-custom">Category</label>
+                <select class="form-select form-control-custom" id="category" name="category">
+                    <option value="">All</option>
+                    {% for c in categories %}
+                        <option value="{{ c.id }}" {% if selected_category|string == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Target Muscle -->
+            <div class="col-md-2">
+                <label for="muscle" class="form-label small fw-semibold text-secondary-custom">Target Muscle</label>
+                <select class="form-select form-control-custom" id="muscle" name="muscle">
+                    <option value="">All</option>
+                    {% for m in target_muscles %}
+                        <option value="{{ m }}" {% if selected_muscle == m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Difficulty -->
+            <div class="col-md-2">
+                <label for="difficulty" class="form-label small fw-semibold text-secondary-custom">Difficulty</label>
+                <select class="form-select form-control-custom" id="difficulty" name="difficulty">
+                    <option value="">All</option>
+                    <option value="Beginner" {% if selected_difficulty == 'Beginner' %}selected{% endif %}>Beginner</option>
+                    <option value="Intermediate" {% if selected_difficulty == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                    <option value="Advanced" {% if selected_difficulty == 'Advanced' %}selected{% endif %}>Advanced</option>
+                </select>
+            </div>
+            
+            <!-- Equipment -->
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary-custom w-100 py-2">
+                    <i class="bi bi-funnel-fill me-1"></i>Apply Filters
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Exercise list grid -->
+{% if exercises %}
+    <div class="row g-4 mb-4">
+        {% for exc in exercises %}
+            <div class="col-md-6 col-lg-4 col-xl-3">
+                <div class="card-custom h-100 d-flex flex-column">
+                    <div class="p-4 flex-grow-1">
+                        <span class="badge bg-secondary badge-custom mb-2">{{ exc.category.name }}</span>
+                        <h5 class="fw-bold text-white mb-2">{{ exc.name }}</h5>
+                        <p class="text-secondary-custom small mb-3">{{ exc.description[:90] }}...</p>
+                        
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge bg-dark border border-secondary border-opacity-25 badge-custom text-secondary-custom">{{ exc.target_muscle }}</span>
+                            <span class="badge bg-dark border border-secondary border-opacity-25 badge-custom text-secondary-custom">{{ exc.equipment_required }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 bg-tertiary border-top border-secondary border-opacity-10 text-end">
+                        <a href="{{ url_for('exercises.detail', exercise_id=exc.id) }}" class="btn btn-outline-custom btn-sm w-100 rounded-pill py-1.5">
+                            Instructions <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination.pages > 1 %}
+        <nav aria-label="Exercise pagination">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link bg-dark border-secondary border-opacity-25 text-white" href="{{ url_for('exercises.list_exercises', page=pagination.prev_num, search=search, category=selected_category, muscle=selected_muscle, difficulty=selected_difficulty) }}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link {% if page_num == pagination.page %}bg-indigo border-indigo{% else %}bg-dark border-secondary border-opacity-25{% endif %} text-white" href="{{ url_for('exercises.list_exercises', page=page_num, search=search, category=selected_category, muscle=selected_muscle, difficulty=selected_difficulty) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link bg-dark border-secondary border-opacity-25 text-secondary-custom">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link bg-dark border-secondary border-opacity-25 text-white" href="{{ url_for('exercises.list_exercises', page=pagination.next_num, search=search, category=selected_category, muscle=selected_muscle, difficulty=selected_difficulty) }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="card-custom text-center p-5">
+        <i class="bi bi-search text-muted fs-1 mb-3"></i>
+        <h4>No Exercises Found</h4>
+        <p class="text-secondary-custom small mb-0">Try adjusting your keyword search or filter parameters.</p>
+    </div>
+{% endif %}
+{% endblock %}

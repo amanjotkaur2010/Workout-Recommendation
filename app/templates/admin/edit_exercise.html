@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}FitAI - Edit Exercise{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-10">
+        <div class="card-custom p-4 p-sm-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0"><i class="bi bi-pencil-square text-gradient me-2"></i>Edit Exercise: {{ exercise.name }}</h2>
+                <a href="{{ url_for('admin.exercises_list') }}" class="btn btn-outline-custom btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i>Back to List
+                </a>
+            </div>
+
+            <form action="{{ url_for('admin.edit_exercise', exercise_id=exercise.id) }}" method="POST">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label small fw-semibold text-secondary-custom">Exercise Name*</label>
+                        <input type="text" class="form-control form-control-custom" id="name" name="name" required value="{{ exercise.name }}" placeholder="e.g. Incline Bench Press">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="category_id" class="form-label small fw-semibold text-secondary-custom">Category*</label>
+                        <select class="form-select form-control-custom" id="category_id" name="category_id" required>
+                            {% for c in categories %}
+                                <option value="{{ c.id }}" {% if exercise.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="target_muscle" class="form-label small fw-semibold text-secondary-custom">Primary Target Muscle*</label>
+                        <select class="form-select form-control-custom" id="target_muscle" name="target_muscle" required>
+                            {% set muscles = ['Chest', 'Back', 'Shoulders', 'Quads', 'Hamstrings', 'Glutes', 'Biceps', 'Triceps', 'Abs', 'Calves'] %}
+                            {% for m in muscles %}
+                                <option value="{{ m }}" {% if exercise.target_muscle == m %}selected{% endif %}>{{ m }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="difficulty" class="form-label small fw-semibold text-secondary-custom">Difficulty Level*</label>
+                        <select class="form-select form-control-custom" id="difficulty" name="difficulty" required>
+                            <option value="Beginner" {% if exercise.difficulty == 'Beginner' %}selected{% endif %}>Beginner</option>
+                            <option value="Intermediate" {% if exercise.difficulty == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                            <option value="Advanced" {% if exercise.difficulty == 'Advanced' %}selected{% endif %}>Advanced</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="equipment_required" class="form-label small fw-semibold text-secondary-custom">Required Equipment*</label>
+                        <input type="text" class="form-control form-control-custom" id="equipment_required" name="equipment_required" required value="{{ exercise.equipment_required }}" placeholder="e.g. Dumbbell, Bench or Bodyweight">
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <label for="secondary_muscles" class="form-label small fw-semibold text-secondary-custom">Secondary Muscles (comma-separated)</label>
+                        <input type="text" class="form-control form-control-custom" id="secondary_muscles" name="secondary_muscles" value="{{ exercise.secondary_muscles or '' }}" placeholder="e.g. Triceps, Shoulders">
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="default_sets" class="form-label small fw-semibold text-secondary-custom">Default Sets</label>
+                        <input type="number" class="form-control form-control-custom" id="default_sets" name="default_sets" min="1" value="{{ exercise.default_sets }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="default_reps" class="form-label small fw-semibold text-secondary-custom">Default Reps</label>
+                        <input type="number" class="form-control form-control-custom" id="default_reps" name="default_reps" min="1" value="{{ exercise.default_reps }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="default_rest_time" class="form-label small fw-semibold text-secondary-custom">Rest Time (secs)</label>
+                        <input type="number" class="form-control form-control-custom" id="default_rest_time" name="default_rest_time" min="5" value="{{ exercise.default_rest_time }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="calories_per_minute" class="form-label small fw-semibold text-secondary-custom">Calories Burned/Min</label>
+                        <input type="number" step="0.1" class="form-control form-control-custom" id="calories_per_minute" name="calories_per_minute" min="0.1" value="{{ exercise.calories_per_minute }}">
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <label for="video_url" class="form-label small fw-semibold text-secondary-custom">YouTube Video Embed Link</label>
+                        <input type="url" class="form-control form-control-custom" id="video_url" name="video_url" value="{{ exercise.video_url or '' }}" placeholder="https://www.youtube.com/embed/...">
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <label for="description" class="form-label small fw-semibold text-secondary-custom">Description / Instructions</label>
+                        <textarea class="form-control form-control-custom" id="description" name="description" rows="4" placeholder="Step-by-step guidance...">{{ exercise.description or '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-primary-custom px-5 py-2.5">
+                        Update Exercise
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

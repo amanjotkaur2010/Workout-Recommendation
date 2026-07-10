@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}FitAI - Workout Planner{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-calendar3 text-gradient me-2"></i>Weekly Routine Planner</h2>
+        <p class="text-secondary-custom small mb-0">View scheduled sessions, swap exercises, and log your progress.</p>
+    </div>
+    {% if active_plan %}
+        <a href="{{ url_for('workouts.export_pdf') }}" class="btn btn-primary-custom rounded-pill px-4">
+            <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF Report
+        </a>
+    {% endif %}
+</div>
+
+<!-- AI Progression and Deload Advice -->
+{% if active_plan %}
+    {% if progression.deload_recommended %}
+        <div class="alert alert-warning border-0 rounded-3 shadow-sm mb-4" role="alert">
+            <h6 class="fw-bold"><i class="bi bi-shield-exclamation me-2"></i>Deload Warning: Muscle Recovery Suggested</h6>
+            <p class="mb-0 small text-dark">{{ progression.deload_reason }}</p>
+        </div>
+    {% endif %}
+
+    {% if progression.progression_recommendations %}
+        <div class="alert alert-success border-0 rounded-3 shadow-sm mb-4" role="alert">
+            <h6 class="fw-bold"><i class="bi bi-graph-up-arrow me-2"></i>Smart Progression Recommendations</h6>
+            <ul class="mb-0 small text-dark ps-3">
+                {% for rec in progression.progression_recommendations %}
+                    <li><b>{{ rec.exercise_name }}</b>: {{ rec.recommended_next_step }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{% endif %}
+
+<!-- Workout schedule days -->
+{% if active_plan %}
+    <div class="row g-4">
+        {% for day in sorted_days %}
+            <div class="col-lg-6 col-xl-4">
+                <div class="card-custom h-100 d-flex flex-column">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 fw-bold">{{ day }}</h4>
+                        <span class="badge bg-indigo badge-custom">{{ weekly_schedule[day]|length }} Exercises</span>
+                    </div>
+                    <div class="p-3 flex-grow-1">
+                        <div class="list-group list-group-flush bg-transparent">
+                            {% for pe in weekly_schedule[day] %}
+                                <div class="list-group-item bg-transparent text-white px-0 py-3 border-secondary border-opacity-10">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <a href="{{ url_for('exercises.detail', exercise_id=pe.exercise.id) }}" class="fw-bold text-decoration-none text-white hover-primary">{{ pe.exercise.name }}</a>
+                                            <div class="mt-1">
+                                                <span class="badge bg-secondary badge-custom">{{ pe.exercise.target_muscle }}</span>
+                                                <span class="badge bg-dark badge-custom border border-secondary border-opacity-25">{{ pe.exercise.difficulty }}</span>
+                                            </div>
+                                        </div>
+                                        <a href="{{ url_for('workouts.substitute', pe_id=pe.id) }}" class="btn btn-outline-secondary btn-sm rounded-circle p-1 border-opacity-50" title="Substitute exercise">
+                                            <i class="bi bi-arrow-left-right text-secondary"></i>
+                                        </a>
+                                    </div>
+                                    <div class="d-flex gap-3 mt-2 text-secondary-custom small">
+                                        <span><b>Sets:</b> {{ pe.sets }}</span>
+                                        <span><b>Reps:</b> {{ pe.reps }}</span>
+                                        <span><b>Rest:</b> {{ pe.rest_time }}s</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="p-3 bg-tertiary border-top border-secondary border-opacity-10 text-center">
+                        <a href="{{ url_for('workouts.log_session', day_of_week=day) }}" class="btn btn-primary-custom w-100 rounded-pill py-2">
+                            <i class="bi bi-play-fill me-1"></i>Start Workout Session
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card-custom text-center p-5 my-5">
+        <i class="bi bi-calendar-x text-muted fs-1 mb-3"></i>
+        <h3>No Active Workout Plan</h3>
+        <p class="text-secondary-custom w-75 mx-auto mb-4">
+            You don't have an active fitness routine configured. Configure your parameters and generate a customized fitness program.
+        </p>
+        <a href="{{ url_for('workouts.recommend') }}" class="btn btn-primary-custom px-5 py-3 rounded-pill">
+            <i class="bi bi-cpu me-2"></i>Generate AI Plan Now
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

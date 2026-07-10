@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}FitAI - Workout Details{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-9">
+        <div class="card-custom p-4 p-sm-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1"><i class="bi bi-journal-text text-gradient me-2"></i>Workout Summary</h2>
+                    <p class="text-secondary-custom small mb-0">Logged on {{ session.date.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+                <a href="{{ url_for('workouts.history') }}" class="btn btn-outline-custom btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Logs
+                </a>
+            </div>
+
+            <!-- Stats grid -->
+            <div class="row g-3 text-center mb-4">
+                <div class="col-6 col-md-4">
+                    <div class="card-custom bg-tertiary p-3">
+                        <i class="bi bi-clock-history text-primary fs-3 mb-1"></i>
+                        <h4 class="mb-0 fw-bold">{{ session.duration }} <span class="small text-muted fs-6">mins</span></h4>
+                        <div class="small text-muted">Duration</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="card-custom bg-tertiary p-3">
+                        <i class="bi bi-fire text-danger fs-3 mb-1"></i>
+                        <h4 class="mb-0 fw-bold">{{ session.calories_burned }} <span class="small text-muted fs-6">kcal</span></h4>
+                        <div class="small text-muted">Calories Burned</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card-custom bg-tertiary p-3">
+                        <i class="bi bi-calendar-event text-success fs-3 mb-1"></i>
+                        <h4 class="mb-0 fw-bold">{{ session.day_of_week or 'Custom' }}</h4>
+                        <div class="small text-muted">Routine Day</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exercise Details list -->
+            <h4 class="fw-bold mb-3 text-white"><i class="bi bi-list-task me-2"></i>Logged Exercises</h4>
+            {% for exc, logs in exercise_logs.items() %}
+                <div class="card-custom bg-tertiary p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary border-opacity-10">
+                        <h6 class="fw-bold mb-0 text-white">{{ exc.name }}</h6>
+                        <span class="badge bg-secondary badge-custom">{{ exc.target_muscle }}</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-borderless text-white mb-0 align-middle text-center">
+                            <thead>
+                                <tr class="text-secondary-custom small">
+                                    <th style="width: 25%">Set</th>
+                                    <th style="width: 35%">Weight</th>
+                                    <th style="width: 40%">Reps Completed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                    <tr>
+                                        <td>{{ log.set_number }}</td>
+                                        <td>{{ log.weight }} kg</td>
+                                        <td>{{ log.reps_completed }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}FitAI - Log {{ day_of_week }} Session{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-9">
+        <div class="card-custom p-4 p-sm-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1"><i class="bi bi-play-fill text-gradient me-1"></i>Active Session: {{ day_of_week }}</h2>
+                    <p class="text-secondary-custom small mb-0">Adjust sets and log weights/reps as you complete them.</p>
+                </div>
+                <a href="{{ url_for('workouts.planner') }}" class="btn btn-outline-custom btn-sm rounded-pill px-3">Cancel</a>
+            </div>
+
+            <form action="{{ url_for('workouts.log_session', day_of_week=day_of_week) }}" method="POST">
+                <!-- Session Duration -->
+                <div class="card-custom bg-tertiary p-3 mb-4 text-center">
+                    <label for="duration" class="form-label small fw-semibold text-secondary-custom d-block mb-2">Total Session Duration (minutes)</label>
+                    <input type="number" class="form-control form-control-custom w-25 mx-auto text-center" id="duration" name="duration" required min="5" max="240" value="45">
+                </div>
+
+                <!-- Exercise List to Log -->
+                {% for pe in plan_exercises %}
+                    {% set exc_id = pe.exercise.id %}
+                    <div class="card-custom bg-tertiary p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-0 text-white">{{ pe.exercise.name }}</h5>
+                                <span class="badge bg-secondary badge-custom mt-1">{{ pe.exercise.target_muscle }}</span>
+                            </div>
+                            <div class="text-muted small">Target: {{ pe.sets }} sets x {{ pe.reps }} reps</div>
+                        </div>
+
+                        <!-- Sets Table/Form -->
+                        <div class="table-responsive">
+                            <table class="table table-dark table-borderless text-white mb-0 align-middle">
+                                <thead>
+                                    <tr class="text-secondary-custom small">
+                                        <th style="width: 15%">Set</th>
+                                        <th style="width: 30%">Weight (kg)</th>
+                                        <th style="width: 30%">Reps Completed</th>
+                                        <th style="width: 25%" class="text-center">Done</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for s_idx in range(1, pe.sets + 1) %}
+                                        <tr>
+                                            <td><b>{{ s_idx }}</b></td>
+                                            <td>
+                                                <input type="number" step="0.5" class="form-control form-control-custom py-1 text-center"
+                                                       name="weight_{{ exc_id }}_{{ s_idx }}" min="0" max="500" value="0.0" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-custom py-1 text-center"
+                                                       name="reps_{{ exc_id }}_{{ s_idx }}" min="1" max="100" value="{{ pe.reps }}" required>
+                                            </td>
+                                            <td class="text-center">
+                                                <input class="form-check-input border-secondary" type="checkbox"
+                                                       name="completed_{{ exc_id }}_{{ s_idx }}" checked>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-primary-custom px-5 py-3 rounded-pill text-white fw-bold">
+                        <i class="bi bi-check-circle-fill me-2"></i>Complete & Save Workout
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

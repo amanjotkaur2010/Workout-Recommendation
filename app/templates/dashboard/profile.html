@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}FitAI - Profile Settings{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-10">
+        <div class="card-custom p-4 p-sm-5">
+            <h2 class="fw-bold mb-2"><i class="bi bi-person-gear text-gradient me-2"></i>Fitness Profile Settings</h2>
+            <p class="text-secondary-custom small mb-4">Complete your physiological profile and equipment choices to calibrate the AI workout generator.</p>
+            
+            <form action="{{ url_for('dashboard.profile') }}" method="POST">
+                <!-- Section 1: Biological Metrics -->
+                <h5 class="fw-bold mb-3 text-indigo"><i class="bi bi-activity me-2"></i>Body Metrics</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label for="age" class="form-label small fw-semibold">Age</label>
+                        <input type="number" class="form-control form-control-custom" id="age" name="age" required min="10" max="100" value="{{ profile.age or '' }}" placeholder="e.g. 28">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="gender" class="form-label small fw-semibold">Gender</label>
+                        <select class="form-select form-control-custom" id="gender" name="gender" required>
+                            <option value="" disabled {% if not profile.gender %}selected{% endif %}>Select</option>
+                            <option value="Male" {% if profile.gender == 'Male' %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if profile.gender == 'Female' %}selected{% endif %}>Female</option>
+                            <option value="Other" {% if profile.gender == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="height" class="form-label small fw-semibold">Height (cm)</label>
+                        <input type="number" step="0.1" class="form-control form-control-custom" id="height" name="height" required min="100" max="250" value="{{ profile.height or '' }}" placeholder="e.g. 175">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="weight" class="form-label small fw-semibold">Weight (kg)</label>
+                        <input type="number" step="0.1" class="form-control form-control-custom" id="weight" name="weight" required min="30" max="250" value="{{ profile.weight or '' }}" placeholder="e.g. 72.5">
+                    </div>
+                </div>
+
+                <!-- Section 2: Goals & Experience -->
+                <h5 class="fw-bold mb-3 text-indigo"><i class="bi bi-trophy me-2"></i>Goals & Splits</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label for="fitness_goal" class="form-label small fw-semibold">Fitness Goal</label>
+                        <select class="form-select form-control-custom" id="fitness_goal" name="fitness_goal" required>
+                            <option value="" disabled {% if not profile.fitness_goal %}selected{% endif %}>Select</option>
+                            <option value="Weight Loss" {% if profile.fitness_goal == 'Weight Loss' %}selected{% endif %}>Weight Loss</option>
+                            <option value="Muscle Gain" {% if profile.fitness_goal == 'Muscle Gain' %}selected{% endif %}>Muscle Gain</option>
+                            <option value="Strength" {% if profile.fitness_goal == 'Strength' %}selected{% endif %}>Strength Builder</option>
+                            <option value="Endurance" {% if profile.fitness_goal == 'Endurance' %}selected{% endif %}>Endurance</option>
+                            <option value="General Fitness" {% if profile.fitness_goal == 'General Fitness' %}selected{% endif %}>General Fitness</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="activity_level" class="form-label small fw-semibold">Daily Activity Level</label>
+                        <select class="form-select form-control-custom" id="activity_level" name="activity_level" required>
+                            <option value="" disabled {% if not profile.activity_level %}selected{% endif %}>Select</option>
+                            <option value="Sedentary" {% if profile.activity_level == 'Sedentary' %}selected{% endif %}>Sedentary (No Exercise)</option>
+                            <option value="Lightly Active" {% if profile.activity_level == 'Lightly Active' %}selected{% endif %}>Lightly Active (1-3 days/week)</option>
+                            <option value="Moderately Active" {% if profile.activity_level == 'Moderately Active' %}selected{% endif %}>Moderately Active (3-5 days/week)</option>
+                            <option value="Very Active" {% if profile.activity_level == 'Very Active' %}selected{% endif %}>Very Active (6-7 days/week)</option>
+                            <option value="Extra Active" {% if profile.activity_level == 'Extra Active' %}selected{% endif %}>Extra Active (Physical Job / 2x daily)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="fitness_level" class="form-label small fw-semibold">Fitness Level</label>
+                        <select class="form-select form-control-custom" id="fitness_level" name="fitness_level" required>
+                            <option value="" disabled {% if not profile.fitness_level %}selected{% endif %}>Select</option>
+                            <option value="Beginner" {% if profile.fitness_level == 'Beginner' %}selected{% endif %}>Beginner</option>
+                            <option value="Intermediate" {% if profile.fitness_level == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                            <option value="Advanced" {% if profile.fitness_level == 'Advanced' %}selected{% endif %}>Advanced</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="workout_experience" class="form-label small fw-semibold">Workout Experience</label>
+                        <select class="form-select form-control-custom" id="workout_experience" name="workout_experience" required>
+                            <option value="" disabled {% if not profile.workout_experience %}selected{% endif %}>Select</option>
+                            <option value="None" {% if profile.workout_experience == 'None' %}selected{% endif %}>None (First timer)</option>
+                            <option value="Less than 1 year" {% if profile.workout_experience == 'Less than 1 year' %}selected{% endif %}>Less than 1 year</option>
+                            <option value="1-3 years" {% if profile.workout_experience == '1-3 years' %}selected{% endif %}>1 - 3 years</option>
+                            <option value="More than 3 years" {% if profile.workout_experience == 'More than 3 years' %}selected{% endif %}>More than 3 years</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="training_frequency" class="form-label small fw-semibold">Training Days/Week</label>
+                        <input type="number" class="form-control form-control-custom" id="training_frequency" name="training_frequency" required min="1" max="6" value="{{ profile.training_frequency or 3 }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="daily_time_limit" class="form-label small fw-semibold">Daily Time Limit (mins)</label>
+                        <input type="number" class="form-control form-control-custom" id="daily_time_limit" name="daily_time_limit" required min="20" max="180" value="{{ profile.daily_time_limit or 60 }}">
+                    </div>
+                </div>
+
+                <!-- Section 3: Equipment Availability -->
+                <h5 class="fw-bold mb-2 text-indigo"><i class="bi bi-wrench-adjustable me-2"></i>Available Equipment</h5>
+                <p class="text-secondary-custom small mb-3">AI recommendations will exclude exercises using equipment you do not select. (Bodyweight is enabled by default)</p>
+                <div class="row g-3 mb-4">
+                    {% set equip_options = ['Dumbbell', 'Barbell', 'Cable', 'Machine', 'Pull-up Bar', 'Bench'] %}
+                    {% for eq in equip_options %}
+                    <div class="col-6 col-md-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="available_equipment" value="{{ eq }}" id="eq_{{ loop.index }}"
+                            {% if profile.available_equipment and eq in profile.available_equipment %}checked{% endif %}>
+                            <label class="form-check-label text-secondary-custom" for="eq_{{ loop.index }}">{{ eq }}</label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Section 4: Target Muscle Priorities -->
+                <h5 class="fw-bold mb-2 text-indigo"><i class="bi bi-person-fill-gear me-2"></i>Preferred Muscle Groups</h5>
+                <p class="text-secondary-custom small mb-3">Select groups you want to prioritize or place first in your workouts.</p>
+                <div class="row g-3 mb-4">
+                    {% set muscle_options = ['Chest', 'Back', 'Shoulders', 'Quads', 'Hamstrings', 'Glutes', 'Biceps', 'Triceps', 'Abs', 'Calves'] %}
+                    {% for muscle in muscle_options %}
+                    <div class="col-6 col-md-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="preferred_muscles" value="{{ muscle }}" id="muscle_{{ loop.index }}"
+                            {% if profile.preferred_muscles and muscle in profile.preferred_muscles %}checked{% endif %}>
+                            <label class="form-check-label text-secondary-custom" for="muscle_{{ loop.index }}">{{ muscle }}</label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Section 5: Medical Limitations / Injuries -->
+                <h5 class="fw-bold mb-2 text-indigo"><i class="bi bi-heart-pulse-fill me-2"></i>Physical Limitations & Injuries</h5>
+                <p class="text-secondary-custom small mb-3">List active areas of pain or injury (e.g. Knee pain, Shoulder injury, Lower Back strain). The AI engine will avoid exercises engaging these structures.</p>
+                <div class="mb-4">
+                    <textarea class="form-control form-control-custom" id="medical_limitations" name="medical_limitations" rows="3" placeholder="e.g. Shoulder injury, Back pain, Neck stiffness">{{ profile.medical_limitations or '' }}</textarea>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary-custom px-5 py-2.5">
+                        <i class="bi bi-check-lg me-2"></i>Save Fitness Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

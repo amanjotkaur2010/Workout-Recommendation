@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}FitAI - Substitute Exercise{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-8">
+        <div class="card-custom p-4 p-sm-5">
+            <h2 class="fw-bold mb-1"><i class="bi bi-arrow-left-right text-gradient me-2"></i>Substitute Exercise</h2>
+            <p class="text-secondary-custom small mb-4">Choose an alternative exercise targeting the same primary muscle group that fits your available equipment.</p>
+
+            <!-- Current exercise details -->
+            <div class="card-custom bg-tertiary p-4 mb-4 border border-indigo border-opacity-25">
+                <span class="badge bg-secondary badge-custom mb-2">Current Exercise</span>
+                <h4 class="fw-bold text-white">{{ pe.exercise.name }}</h4>
+                <p class="text-secondary-custom small mb-0">{{ pe.exercise.description }}</p>
+                <div class="d-flex gap-3 mt-2 text-secondary-custom small">
+                    <span><b>Target Muscle:</b> {{ pe.exercise.target_muscle }}</span>
+                    <span><b>Required Equipment:</b> {{ pe.exercise.equipment_required }}</span>
+                </div>
+            </div>
+
+            <!-- Alternatives choices -->
+            <form action="{{ url_for('workouts.substitute', pe_id=pe.id) }}" method="POST">
+                <h5 class="fw-bold mb-3 text-white">Recommended Substitutes</h5>
+                
+                {% if alternatives %}
+                    <div class="row g-3 mb-4">
+                        {% for alt in alternatives %}
+                            <div class="col-12">
+                                <div class="card-custom p-3 bg-tertiary d-flex flex-row align-items-center justify-content-between">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input class="form-check-input me-3" type="radio" name="alternative_id" id="alt_{{ alt.id }}" value="{{ alt.id }}" {% if loop.first %}checked{% endif %}>
+                                        <label class="form-check-label text-start" for="alt_{{ alt.id }}">
+                                            <span class="fw-bold text-white d-block">{{ alt.name }}</span>
+                                            <span class="text-secondary-custom small d-block">{{ alt.description[:100] }}...</span>
+                                            <span class="badge bg-dark border border-secondary border-opacity-25 badge-custom mt-1">{{ alt.equipment_required }}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('workouts.planner') }}" class="btn btn-outline-custom">Cancel</a>
+                        <button type="submit" class="btn btn-primary-custom px-4">Swap Exercise</button>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning border-0 rounded-3 mb-4">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        No alternative exercises found matching your profile targets (muscle group, equipment, and injury limitations).
+                    </div>
+                    <a href="{{ url_for('workouts.planner') }}" class="btn btn-outline-custom">Back to Planner</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

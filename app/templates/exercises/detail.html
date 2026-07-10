@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}FitAI - {{ exercise.name }} Details{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('exercises.list_exercises') }}" class="btn btn-outline-custom btn-sm rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i>Back to Library
+    </a>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Exercise Info -->
+    <div class="col-lg-6">
+        <div class="card-custom p-4 p-sm-5 h-100">
+            <span class="badge bg-indigo badge-custom mb-2">{{ exercise.category.name }}</span>
+            <h1 class="fw-bold mb-3">{{ exercise.name }}</h1>
+            
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <span class="badge bg-secondary badge-custom">{{ exercise.target_muscle }} (Primary)</span>
+                {% if exercise.secondary_muscles %}
+                    <span class="badge bg-dark border border-secondary border-opacity-25 badge-custom text-secondary-custom">Secondary: {{ exercise.secondary_muscles }}</span>
+                {% endif %}
+                <span class="badge {% if exercise.difficulty == 'Beginner' %}bg-beginner{% elif exercise.difficulty == 'Intermediate' %}bg-intermediate{% else %}bg-advanced{% endif %} badge-custom">{{ exercise.difficulty }}</span>
+            </div>
+
+            <h5 class="fw-bold text-white mb-2">Instructions</h5>
+            <p class="text-secondary-custom mb-4 leading-relaxed">{{ exercise.description }}</p>
+
+            <div class="row g-3 bg-tertiary p-3 rounded-3 mb-2 small text-secondary-custom">
+                <div class="col-6 col-md-4">
+                    <b>Equipment:</b><br>
+                    <span class="text-white">{{ exercise.equipment_required }}</span>
+                </div>
+                <div class="col-6 col-md-4">
+                    <b>Est Calorie Burn:</b><br>
+                    <span class="text-white">{{ exercise.calories_per_minute }} kcal/min</span>
+                </div>
+                <div class="col-12 col-md-4">
+                    <b>Default Split:</b><br>
+                    <span class="text-white">{{ exercise.default_sets }} sets x {{ exercise.default_reps }} reps</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Integration -->
+    <div class="col-lg-6">
+        <div class="card-custom p-4 h-100 d-flex flex-column justify-content-center">
+            <h5 class="fw-bold mb-3"><i class="bi bi-play-btn-fill text-danger me-2"></i>Instructional Video</h5>
+            {% if exercise.video_url %}
+                <div class="video-container">
+                    <iframe src="{{ exercise.video_url }}" title="{{ exercise.name }} Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                </div>
+            {% else %}
+                <div class="text-center py-5 border border-secondary border-dashed rounded-3">
+                    <i class="bi bi-camera-video-off text-muted fs-1 mb-3 d-block"></i>
+                    <span class="text-secondary-custom small">No video reference available for this exercise.</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Alternative Suggestions -->
+{% if substitutions %}
+    <hr class="my-5 border-secondary border-opacity-10">
+    <div class="mb-4">
+        <h3 class="fw-bold mb-1">Alternative Substitutions</h3>
+        <p class="text-secondary-custom small mb-0">Exercises targeting the same muscle group matching your equipment.</p>
+    </div>
+    
+    <div class="row g-4">
+        {% for alt in substitutions %}
+            <div class="col-md-4">
+                <div class="card-custom p-4 h-100 d-flex flex-column">
+                    <h5 class="fw-bold text-white mb-2">{{ alt.name }}</h5>
+                    <p class="text-secondary-custom small flex-grow-1 mb-3">{{ alt.description[:100] }}...</p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <span class="badge bg-dark border border-secondary border-opacity-25 badge-custom text-secondary-custom">{{ alt.equipment_required }}</span>
+                        <a href="{{ url_for('exercises.detail', exercise_id=alt.id) }}" class="btn btn-outline-custom btn-sm py-1.5 px-3 rounded-pill">View Detail</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

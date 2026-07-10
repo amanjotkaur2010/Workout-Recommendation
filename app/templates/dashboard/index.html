@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}FitAI - Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Quick Bio Card -->
+    <div class="col-lg-4">
+        <div class="card-custom h-100 p-4">
+            <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-person-circle text-gradient fs-2 me-3"></i>
+                <div>
+                    <h3 class="mb-0">{{ current_user.username }}</h3>
+                    <span class="badge bg-secondary badge-custom">{{ profile.fitness_level }}</span>
+                </div>
+            </div>
+            <div class="row g-2 text-center my-2">
+                <div class="col-4 border-end border-secondary border-opacity-25">
+                    <h5 class="mb-0 fw-bold">{{ profile.weight }}<span class="small text-muted fs-6">kg</span></h5>
+                    <div class="small text-muted">Weight</div>
+                </div>
+                <div class="col-4 border-end border-secondary border-opacity-25">
+                    <h5 class="mb-0 fw-bold">{{ profile.height }}<span class="small text-muted fs-6">cm</span></h5>
+                    <div class="small text-muted">Height</div>
+                </div>
+                <div class="col-4">
+                    <h5 class="mb-0 fw-bold">{{ (profile.weight / ((profile.height/100)**2)) | round(1) if profile.height else 0 }}</h5>
+                    <div class="small text-muted">BMI</div>
+                </div>
+            </div>
+            <hr class="border-secondary border-opacity-25 my-3">
+            <div class="small">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-secondary-custom">Fitness Goal:</span>
+                    <span class="fw-semibold">{{ profile.fitness_goal }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-secondary-custom">TDEE Target:</span>
+                    <span class="fw-semibold">{{ profile.calorie_target | int }} kcal</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metrics Cards (Calorie Burn, Water, Completion %, Streaks) -->
+    <div class="col-lg-8">
+        <div class="row g-4">
+            <!-- Calorie Burn Card -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card-custom p-4 text-center">
+                    <i class="bi bi-fire text-danger fs-1 mb-2"></i>
+                    <h4 class="mb-1 fw-bold">{{ calories_burned }}</h4>
+                    <p class="text-secondary-custom small mb-0">Active Calories (kcal)</p>
+                </div>
+            </div>
+            <!-- Water Logged Card -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card-custom p-4 text-center">
+                    <i class="bi bi-droplet-fill text-info fs-1 mb-2"></i>
+                    <h4 class="mb-1 fw-bold">{{ record.water_intake | int }} / {{ profile.water_target | int }}</h4>
+                    <p class="text-secondary-custom small mb-0">Water Intake (ml)</p>
+                </div>
+            </div>
+            <!-- Completion Card -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card-custom p-4 text-center">
+                    <i class="bi bi-patch-check-fill text-success fs-1 mb-2"></i>
+                    <h4 class="mb-1 fw-bold">{{ completion_rate }}%</h4>
+                    <p class="text-secondary-custom small mb-0">Weekly Completion</p>
+                </div>
+            </div>
+            <!-- Streak Card -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card-custom p-4 text-center">
+                    <i class="bi bi-award-fill text-warning fs-1 mb-2"></i>
+                    <h4 class="mb-1 fw-bold">{{ streak }} <span class="small fs-6 fw-normal">days</span></h4>
+                    <p class="text-secondary-custom small mb-0">Workout Streak</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logging Controls Quick Access -->
+        <div class="card-custom p-3 mt-4">
+            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                <span class="small fw-semibold text-secondary-custom"><i class="bi bi-plus-circle me-1"></i>Quick Log:</span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-custom btn-sm py-1.5 px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#waterModal"><i class="bi bi-droplet me-1"></i>Log Water</button>
+                    <button class="btn btn-outline-custom btn-sm py-1.5 px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#calorieModal"><i class="bi bi-egg-fried me-1"></i>Log Calories</button>
+                    <button class="btn btn-outline-custom btn-sm py-1.5 px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#weightModal"><i class="bi bi-scale me-1"></i>Log Weight</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row g-4 mb-4">
+    <!-- Weight Trend -->
+    <div class="col-lg-6">
+        <div class="card-custom p-4">
+            <h5 class="mb-3"><i class="bi bi-graph-up me-2"></i>Weight Tracker (Last 7 Logs)</h5>
+            <div style="height: 250px;">
+                <canvas id="weightChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calorie Balance -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card-custom p-4">
+            <h5 class="mb-3"><i class="bi bi-calculator me-2"></i>Calories</h5>
+            <div style="height: 250px;">
+                <canvas id="caloriesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Water intake -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card-custom p-4 text-center">
+            <h5 class="mb-3 text-start"><i class="bi bi-cup-straw me-2"></i>Hydration</h5>
+            <div style="height: 190px;" class="position-relative">
+                <canvas id="waterChart"></canvas>
+                <div class="position-absolute top-50 start-50 translate-middle">
+                    <span class="fs-4 fw-bold">{{ ((record.water_intake / (profile.water_target or 2500)) * 100) | int }}%</span>
+                </div>
+            </div>
+            <div class="small text-muted mt-3">Target: {{ profile.water_target | int }} ml</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Workouts -->
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="card-custom p-4">
+            <h5 class="mb-3"><i class="bi bi-clock-history me-2"></i>Recent Workouts Completed</h5>
+            {% if recent_workouts %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover table-striped mb-0 text-white border-secondary border-opacity-10 align-middle">
+                        <thead>
+                            <tr class="text-secondary-custom">
+                                <th>Date</th>
+                                <th>Routine</th>
+                                <th>Day</th>
+                                <th>Duration</th>
+                                <th>Calories</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in recent_workouts %}
+                                <tr>
+                                    <td>{{ s.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ s.workout_plan.name if s.workout_plan else 'Custom session' }}</td>
+                                    <td>{{ s.day_of_week or '-' }}</td>
+                                    <td>{{ s.duration }} mins</td>
+                                    <td>{{ s.calories_burned }} kcal</td>
+                                    <td>
+                                        <a href="{{ url_for('workouts.session_detail', session_id=s.id) }}" class="btn btn-outline-custom btn-sm py-1 px-3">Details</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-secondary-custom small">
+                    No workouts logged yet this week. Head over to the <a href="{{ url_for('workouts.planner') }}">Workout Planner</a> to start today's session!
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Fitness score and metrics analysis card -->
+        <div class="card-custom p-4 text-center">
+            <h5 class="mb-3 text-start"><i class="bi bi-lightning-fill me-2"></i>FitAI Fitness Score</h5>
+            <div class="d-inline-flex align-items-center justify-content-center border border-5 border-indigo rounded-circle text-gradient font-bold fs-1" style="width: 120px; height: 120px;">
+                {{ fitness_score }}
+            </div>
+            <p class="small text-secondary-custom mt-3 mb-0">
+                Score based on BMI, workout streak, hydration compliance, and target caloric adherence. Maintain your routine to reach 100!
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- Water Modal -->
+<div class="modal fade" id="waterModal" tabindex="-1" aria-labelledby="waterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary border-opacity-25">
+            <form action="{{ url_for('dashboard.log_water') }}" method="POST">
+                <div class="modal-header border-secondary border-opacity-10">
+                    <h5 class="modal-title" id="waterModalLabel"><i class="bi bi-droplet-fill text-info me-2"></i>Log Water Consumption</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 text-center">
+                        <label for="waterAmount" class="form-label small fw-semibold">Amount to log</label>
+                        <select class="form-select form-control-custom w-75 mx-auto text-center" id="waterAmount" name="amount">
+                            <option value="250">Glass (250 ml)</option>
+                            <option value="500">Shaker (500 ml)</option>
+                            <option value="750">Large Bottle (750 ml)</option>
+                            <option value="1000">1 Liter Bottle (1000 ml)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-10">
+                    <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary-custom btn-sm">Log Intake</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Calorie Modal -->
+<div class="modal fade" id="calorieModal" tabindex="-1" aria-labelledby="calorieModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary border-opacity-25">
+            <form action="{{ url_for('dashboard.log_calories') }}" method="POST">
+                <div class="modal-header border-secondary border-opacity-10">
+                    <h5 class="modal-title" id="calorieModalLabel"><i class="bi bi-egg-fried text-gradient me-2"></i>Log Calorie Consumption</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 text-center">
+                        <label for="calorieAmount" class="form-label small fw-semibold">Calories consumed (kcal)</label>
+                        <input type="number" class="form-control form-control-custom w-50 mx-auto text-center" id="calorieAmount" name="amount" required min="1" placeholder="e.g. 500">
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-10">
+                    <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary-custom btn-sm">Log Intake</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Weight Modal -->
+<div class="modal fade" id="weightModal" tabindex="-1" aria-labelledby="weightModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary border-opacity-25">
+            <form action="{{ url_for('dashboard.log_weight') }}" method="POST">
+                <div class="modal-header border-secondary border-opacity-10">
+                    <h5 class="modal-title" id="weightModalLabel"><i class="bi bi-scale text-warning me-2"></i>Log Current Weight</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 text-center">
+                        <label for="weightValue" class="form-label small fw-semibold">Current Weight (kg)</label>
+                        <input type="number" step="0.1" class="form-control form-control-custom w-50 mx-auto text-center" id="weightValue" name="weight" required min="20" max="250" value="{{ profile.weight }}">
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-10">
+                    <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary-custom btn-sm">Update Weight</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Custom Chart Rendering Script -->
+<script src="{{ url_for('static', filename='js/chart_dashboard.js') }}"></script>
+{% endblock %}
